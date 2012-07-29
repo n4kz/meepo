@@ -5,6 +5,7 @@
 Meepo - Compile HTML::Template templates into Perl or JavaScript code
 
 =head1 SYNOPSIS
+
 	use Meepo;
 
 	my $code = Meepo->poof( $template => {
