@@ -23,10 +23,15 @@ Build context
 
 Optional parameters
 
-	$Meepo::context->{'builder'} = 'JavaScript';
 	$code = Meepo::poof($template => {
 		builder => 'JavaScript',
 		inc => ['/home/user/templates', '../templates'],
+	});
+	
+Object notation
+
+	$code = Meepo->poof({
+		source => $template,
 	});
 
 
