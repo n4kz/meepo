@@ -1,0 +1,32 @@
+=pod
+
+=head1 NAME
+
+Meepo - Compile HTML::Template templates into Perl or JavaScript code
+
+=head1 SYNOPSIS
+	use Meepo;
+
+	my $code = Meepo->poof( $template => {
+		builder => 'Perl',
+		inc => [qw{ /home/user/templates }]
+	} );
+
+	die $@ if $@;
+
+	print (eval $code)->($parameters);
+
+=head1 DESCRIPTION
+
+This module parses template files and creates parse tree. Depending on selected builder Perl or JavaScript code is generated.
+
+Generated code can be compiled to anonymous function and run as needed.
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2012 Alexander Nazarov, all rights reserved.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+=cut

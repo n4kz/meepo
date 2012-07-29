@@ -3,7 +3,9 @@ use strict;
 use File::Basename;
 use Meepo::Tags;
 use Meepo::Clones;
-use vars qw{ $prefix $space $context $preview };
+use vars qw{ $prefix $space $context $preview $VERSION };
+
+$VERSION = '0.01';
 
 $preview = 30;
 $prefix = 'tmpl_';
