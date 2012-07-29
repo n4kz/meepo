@@ -6,16 +6,29 @@ Meepo - Compile HTML::Template templates into Perl or JavaScript code
 
 =head1 SYNOPSIS
 
+General usage:
+
 	use Meepo;
 
-	my $code = Meepo->poof( $template => {
-		builder => 'Perl',
-		inc => [qw{ /home/user/templates }]
-	} );
+	my $code = Meepo::poof($template);
 
 	die $@ if $@;
 
 	print (eval $code)->($parameters);
+
+Build context
+
+	$Meepo::context->{'builder'} = 'JavaScript';
+	$code = Meepo::poof($template);
+
+Optional parameters
+
+	$Meepo::context->{'builder'} = 'JavaScript';
+	$code = Meepo::poof($template => {
+		builder => 'JavaScript',
+		inc => ['/home/user/templates', '../templates'],
+	});
+
 
 =head1 DESCRIPTION
 
