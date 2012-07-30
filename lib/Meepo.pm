@@ -12,10 +12,6 @@ $prefix = 'tmpl_';
 $space = qr{[\s\t\n\r]};
 $context = {
 	inc => [],
-	sub => {
-		include  => \&include,
-	},
-	hooks => 1,
 	builder => 'Perl'
 };
 
@@ -33,16 +29,6 @@ sub scream ($;$) {
 	$@ ||= $what;
 	return undef;
 }
-
-sub hook ($) {
-	local $_ = $_[0];
-	my $hook = $context->{'sub'}{$_->{'_'}};
-
-	return $hook->() if
-		ref $hook and ref $hook eq 'CODE';
-
-	return $_;
-} # hook
 
 sub in ($$) { grep { $_ eq $_[1]->{'_'} } @{ $_[0]->{'%'}{'in'} } }
 
@@ -133,7 +119,7 @@ sub parse ($) {
 	WORK: foreach (@_) {
 		my $start = pos || 0;
 		if ( m{\G(.*?)<(/)?$prefix([\w:-]+)(?(2)>)}iosgc ) {
-			push @queue, hook {
+			push @queue, {
 				'_' => 'noop',
 				'<' => $start,
 				'>' => $start + length $1,
@@ -142,7 +128,7 @@ sub parse ($) {
 			} if $1;
 		} else {
 			my $chunk = substr $_, $start;
-			push @queue, hook {
+			push @queue, {
 				'_' => 'noop',
 				'<' => $start,
 				'>' => $start + length $chunk,
@@ -232,7 +218,7 @@ sub parse ($) {
 		return scream "Unexpected trail", pos
 			if not $closed and not m{\G$space*/?>}osgc;
 
-		push @queue, hook {
+		push @queue, $name eq 'include'? include() : $_ foreach {
 			'_' => $name,
 			'x' => $closed? 1 : 0,
 			'=' => $attrs,
@@ -246,27 +232,21 @@ sub parse ($) {
 	} # WORK
 
 	$@ ||= prepare \@queue unless $context->{'raw'};
-	$@ and return undef;
-
+	return undef if $@;
 	return \@queue;
 } # parse
 
 sub load ($) {
-	my ($source) = @_;
-	foreach (reverse @{ $context->{'inc'} }) {
-		foreach (join '/', $_, $$source) {
-			-f $_ and do {
-				my $fh;
-				local $/;
-				open $fh, $_;
-				$$source = <$fh>;
-				close $fh;
-				return $_;
-			};
-		}
+	foreach (map { join '/', $_, ${ $_[0] } } reverse @{ $context->{'inc'} }) {
+		-f $_ or next;
+		local $/;
+		open my $fh, '<', $_;
+		${ $_[0] } = <$fh>;
+		close $fh;
+		return $_;
 	}
 
-	$@ ||= "File '". $$source ."' was not found";
+	$@ ||= "File '". ${ $_[0] } ."' was not found";
 	return undef;
 } # load
 
@@ -274,29 +254,29 @@ sub include () {
 	my $source = $_->{'='}{'name'};
 	local $context->{'raw'} = 1;
 
-	if ( exists $_->{'='}{'inline'} and $source ) {
-		# Inline includes 
-		if ( my $path = dirname(load(\$source)) ) {
-			local $context->{'inc'} = [$path, @{  $context->{'inc'} }]
-				unless grep { $path eq $_ } @{ $context->{'inc'} };
+	# Inline includes
+	# Run-time includes are handled by clones themselves
+	if ( exists $_->{'='}{'inline'} and $source ) {{
+		my $path = dirname(local $context->{'file'} = load(\$source));
+		last if $@;
 
-			return @{ parse $source };
-		}
-	} else {
-		# Run-time includes are handled by clones themselves
-	}
+		local $context->{'inc'} = [$path, @{  $context->{'inc'} }]
+			unless grep { $path eq $_ } @{ $context->{'inc'} };
+
+		return @{ parse $source };
+	}}
 
 	return $_;
 } # include
 
 sub poof ($;$) {
 	my ($source) = @_;
-	local $Meepo::context = {
-		%$Meepo::context,
-		%{ $_[1] || {} },
+	local $context = {
+		%$context, %{ $_[1] || {} },
 	};
 
 	undef $@;
+	undef $context->{'file'};
 
 	{
 		return undef
@@ -310,23 +290,19 @@ sub poof ($;$) {
 
 		# Try to load file if $source looks like filepath
 		if ( $source =~ m{(?:\A\.?\.?/|\.tmpl\Z)}i ) {
-			my $path = dirname(load(\$source));
-			if ( $path ) {
-				local $context->{'inc'} = [$path, @{  $context->{'inc'} }]
-					unless grep { $path eq $_ } @{ $context->{'inc'} };
-			} else {
-				redo;
-			}
+			redo unless $context->{'file'} = load(\$source);
+
+			# Prepend template directory to search path
+			my $path = dirname($context->{'file'});
+			local $context->{'inc'} = [$path, @{  $context->{'inc'} }]
+				unless grep { $path eq $_ } @{ $context->{'inc'} };
 		}
 	}
 
-	no  warnings 'redefine';
-	local *hook = sub { $_[0] } unless $context->{'hooks'};
-	use warnings 'redefine';
-
 	my $result = parse $source;
-	$@ and return undef;
 
+	# TODO: Option to return parsing tree
+	return undef if $@;
 	return Meepo::Clones::spawn $result, $Meepo::context->{'builder'};
 } # poof
 
