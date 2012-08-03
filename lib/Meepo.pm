@@ -3,13 +3,11 @@ use strict;
 use File::Basename;
 use Meepo::Tags;
 use Meepo::Clones;
-use vars qw{ $prefix $space $context $preview $VERSION };
+use vars qw{ $context $preview $VERSION };
 
 $VERSION = '0.01';
 
 $preview = 30;
-$prefix = 'tmpl_';
-$space = qr{[\s\t\n\r]};
 $context = {
 	inc => [],
 	builder => 'Perl'
@@ -113,12 +111,11 @@ sub prepare ($) {
 } # prepare
 
 sub parse ($) {
-	my (@queue, $attrs);
-	my @tags = keys %Meepo::Tags::tags;
+	my @queue;
 
 	WORK: foreach (@_) {
 		my $start = pos || 0;
-		if ( m{\G(.*?)<(/)?$prefix([\w:-]+)(?(2)>)}iosgc ) {
+		if ( m{\G(.*?)<(/)?tmpl_([\w:-]+)(?(2)>)}isgc ) {
 			push @queue, {
 				'_' => 'noop',
 				'<' => $start,
@@ -138,11 +135,8 @@ sub parse ($) {
 			last WORK;
 		}
 
-		my $name = lc $3;
-		my $closed = $2;
+		my ($name, $closed, $attrs) = (lc $3, $2, {});
 		my $tag = $Meepo::Tags::tags{$name};
-
-		$attrs = {};
 
 		return scream "Unknown tag '$name'", pos
 			unless $tag;
@@ -150,10 +144,10 @@ sub parse ($) {
 		return scream "Tag '$name' can not be closed", $start
 			if $closed and not $tag->{'pair'};
 
-		if ( not $closed and grep { $tag->{$_} } qw{ name attrs }) {
+		if ( not $closed and $tag->{'name'} || $tag->{'attrs'} ) {
 			my ($parsed, @list) = {};
 
-			$parsed->{lc $1} = $3 while m{\G$space*([\w:_-]+)(?:=(['"])(.*?)(?<!\\)\2)?}osgc;
+			$parsed->{lc $1} = $3 while m{\G[\s\t\n\r]*([\w:_-]+)(?:=(['"])(.*?)(?<!\\)\2)?}sgc;
 
 			# Name 
 			if ( $tag->{'name'} ) {
@@ -216,7 +210,7 @@ sub parse ($) {
 		}
 
 		return scream "Unexpected trail", pos
-			if not $closed and not m{\G$space*/?>}osgc;
+			if not $closed and not m{\G[\s\t\n\r]*/?>}sgc;
 
 		push @queue, $name eq 'include'? include() : $_ foreach {
 			'_' => $name,
