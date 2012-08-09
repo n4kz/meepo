@@ -4,6 +4,8 @@ use Cwd;
 use File::Basename;
 use lib join('/../', dirname($0), 'lib');
 use Meepo;
+use Meepo::Clones::Perl;
+use Meepo::Clones::JavaScript;
 
 my $usage = <<"";
 Usage: $0 <builder> <template>
@@ -22,4 +24,4 @@ my $f = Meepo::poof(
 die $@ if $@; 
 
 local $\ = "\n";
-$f and print $f;
+$f and print $$f;
