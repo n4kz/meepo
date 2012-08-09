@@ -1,28 +1,31 @@
 package Meepo::Clones;
 use strict 'vars', 'subs';
-use vars '$clone';
+use vars '$clone', '%cbs';
 
 sub build ($) {
-	join '', map {
-		(
-			join '_', $clone, $_->{'_'}
-		)->();
+	map {
+		$cbs{$_->{'_'}}->();
 	} @{ $_[0] };
 } # build
 
 sub spawn ($$) {
+	my $prefix = 1 + length $_[1];
 	local $clone = $_[1];
+	local %cbs;
 
 	# Lazy load 
 	eval "require Meepo::Clones::$clone" or return undef;
 
-	return
-		join build $_[0],
-			map {
-				$_->();
-			} map {
-				join '_', $clone, $_
-			} qw{ 0 1 }
+	while (my ($k, $v) = each %Meepo::Clones::) {
+		next if index $k, $clone;
+		next if $v eq '::';
+		$cbs{substr $k, $prefix} = $v;
+	}
+
+	return \join '',
+		$cbs{'0'}->(),
+		build $_[0],
+		$cbs{'1'}->();
 } # spawn
 
 1;

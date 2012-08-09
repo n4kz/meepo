@@ -3,14 +3,16 @@ package Meepo::Clones;
 use strict;
 
 sub Perl_0 { <<''
-sub ($) {
-	my @r;
-	local our ($s) = @_;
+sub {
+	no warnings;
+	my $scope = $_[0];
+	my $s = sub { $scope->{$_[0]} };
+	my $r;
 
 }
 
 sub Perl_1 { <<''
-	return join '', @r;
+	return \$r;
 }
 
 }
@@ -45,7 +47,7 @@ sub Perl_loop {
 	} else {
 		join '',
 			Perl_4 join(Perl_expr(), 'foreach (@{', ' || []}) {'),
-			Perl_4 'local $s = { %$s, %$_ };',
+			Perl_4 'my $s = sub { $_->{$_[0]} || &$s };',
 			build($_->{'+'});
 	}
 } # Perl_loop
@@ -71,7 +73,7 @@ sub Perl_expr {
 		return $name if grep { $name eq $_ } qw{ not or and eq ne gt lt cmp };
 	}
 
-	return join $name, '$s->{\'', '\'}' if $name;
+	return join $name, '$s->(\'', '\')' if $name;
 
 	local $_ = $_->{'='}{'expr'}; 
 	my $k = 1;
@@ -100,13 +102,13 @@ sub Perl_include {
 }
 
 sub Perl_var {
-	Perl_4 join Perl_expr(), 'push @r, ', ' || \'\';';
+	Perl_4 join Perl_expr(), '$r .= ', ' || \'\';';
 }
 
 sub Perl_noop {
 	my $chunk = $_->{'a'};
 	$chunk =~ s{'} {\\'}g;
-	Perl_4 join $chunk, 'push @r, \'', '\';';
+	Perl_4 join $chunk, '$r .= \'', '\';';
 }
 
 1;
