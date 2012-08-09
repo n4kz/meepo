@@ -6,31 +6,31 @@ Meepo - Compile HTML::Template templates into Perl or JavaScript code
 
 =head1 SYNOPSIS
 
-General usage:
+General usage
 
 	use Meepo;
 
-	my $code = Meepo::poof($template);
+	my $coderef = Meepo::poof($template);
 
 	die $@ if $@;
 
-	print (eval $code)->($parameters);
+	print (eval $$coderef)->($parameters);
 
 Build context
 
 	$Meepo::context->{'builder'} = 'JavaScript';
-	$code = Meepo::poof($template);
+	$coderef = Meepo::poof($template);
 
 Optional parameters
 
-	$code = Meepo::poof($template => {
+	$coderef = Meepo::poof($template => {
 		builder => 'JavaScript',
 		inc => ['/home/user/templates', '../templates'],
 	});
 	
 Object notation
 
-	$code = Meepo->poof({
+	$coderef = Meepo->poof({
 		source => $template,
 	});
 
@@ -40,6 +40,11 @@ Object notation
 This module parses template files and creates parse tree. Depending on selected builder Perl or JavaScript code is generated.
 
 Generated code can be compiled to anonymous function and run as needed.
+
+=head1 PERFORMANCE
+
+Latest measurements showed that Meepo's Perl clone is slightly faster than HTML::Template::Pro. JavaScript clone performance will 
+be measured in near future.
 
 =head1 COPYRIGHT & LICENSE
 
