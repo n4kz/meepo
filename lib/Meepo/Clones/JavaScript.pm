@@ -19,13 +19,19 @@ package Meepo::Clones;
 use strict;
 
 sub JavaScript_0 { <<''
-function ($s) {
-	var $r=[];
+function ($scope) {
+	var $r = '',
+		$s = (typeof $scope === 'function'? $s = $scope : $s = function ($) { return $scope[$] }),
+		$w = function ($) {
+			if ($ || $ === 0) {
+				$r += $;
+			}
+		};
 
 }
 
 sub JavaScript_1 { <<''
-	return $r.join(''); 
+	return $r; 
 }
 
 }
@@ -59,12 +65,10 @@ sub JavaScript_loop {
 		JavaScript_4 '});';
 	} else {
 		join '',
-			JavaScript_4 join(
-				JavaScript_expr(), 
-				'jQuery.each(',
-				' || [], function ($index, $value) {'
-			),
-			JavaScript_4 '	var $s = jQuery.extend({}, $s, $value);',
+			JavaScript_4 join(JavaScript_expr(), '(', ' || []).forEach(function (l, i) {'),
+			JavaScript_4 '	var $_ = $s,',
+			JavaScript_4 '		$_s = function ($) { return l[$] || $_($) };',
+			JavaScript_4 '	$s = $_s;',
 			build($_->{'+'});
 	}
 } # JavaScript_loop
@@ -87,11 +91,11 @@ sub JavaScript_expr {
 			$name = $_->{'='}{'name'};
 		} else {
 			$name = $_[0] || '';
-			# TODO: fix operators
-			return $Meepo::Clones::JavaScript::operators{$name} if grep { $name eq $_ } qw{ not or and eq ne gt lt le ge cmp };
+			return $Meepo::Clones::JavaScript::operators{$name}
+				if exists $Meepo::Clones::JavaScript::operators{$name}; 
 		}
 
-	return join $name, '$s[\'', '\']' if $name;
+	return join $name, '$s(\'', '\')' if $name;
 
 	local $_ = $_->{'='}{'expr'}; 
 	my $k = 1;
@@ -117,19 +121,19 @@ sub JavaScript_expr {
 
 sub JavaScript_include {
 	# TODO: rewrite this
-	JavaScript_4 join JavaScript_expr(), '$r.push(', '($s));';
+	JavaScript_4 join JavaScript_expr(), '$w(', '($s));';
 }
 
 sub JavaScript_var {
-	JavaScript_4 join JavaScript_expr(), '$r.push(', ' || \'\');';
+	JavaScript_4 join JavaScript_expr(), '$w(', ');';
 }
 
 sub JavaScript_noop {
 	my $chunk = $_->{'a'};
 	$chunk =~ s{'} {\\'}g;
-	$chunk =~ s{[\r\n]} {' + "\\n" + '}g;
-	$chunk =~ s{(</?s)(cript>)} {$1' + '$2}g;
-	JavaScript_4 join $chunk, '$r.push(\'', '\');';
+	$chunk =~ s{[\r\n]+} {' + '\\n' + '}g;
+	$chunk =~ s{(?:(?<=</s)|(?<=<s))(?=cript>)} {' + '}g;
+	JavaScript_4 join $chunk, '$w(\'', '\');';
 }
 
 1;
