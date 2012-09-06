@@ -1,4 +1,17 @@
 package Meepo::Clones::Perl;
+use vars qw{ %reserved $loop };
+
+$loop = 0; # Expand special loop variables or not
+
+%reserved = (
+	__first__   => '!$i',
+	__last__    => '($i == $l)',
+	__inner__   => '($i && $i < $l)',
+	__odd__     => '($i % 2)',
+	__even__    => '!($i % 2)',
+	__counter__ => '$i',
+);
+
 package Meepo::Clones;
 use strict;
 
@@ -43,11 +56,22 @@ sub Perl_unless {
 
 sub Perl_loop {
 	if ( $_->{'x'} ) {
-		Perl_4 '}';
+		(
+			$Meepo::Clones::Perl::loop? (
+				Perl_4 '	$i++;'
+			) : (),
+			Perl_4 '}'
+		);
 	} else {
 		join '',
-			Perl_4 join(Perl_expr(), 'foreach (@{', ' || []}) {'),
-			Perl_4 'my $s = sub { $_->{$_[0]} || &$s };',
+			$Meepo::Clones::Perl::loop? (
+				Perl_4 join(Perl_expr(), 'my $a = ', ' || [];'),
+				Perl_4 'my ($l, $i) = ($#$a, 0);',
+				Perl_4 'foreach (@$a) {',
+			) : (
+				Perl_4 join(Perl_expr(), 'foreach (@{', '|| []}) {'),
+			),
+			Perl_4 '	my $s = sub { $_->{$_[0]} || &$s };',
 			build($_->{'+'});
 	}
 } # Perl_loop
@@ -73,7 +97,7 @@ sub Perl_expr {
 		return $name if grep { $name eq $_ } qw{ not or and eq ne gt lt cmp };
 	}
 
-	return join $name, '$s->(\'', '\')' if $name;
+	return $Meepo::Clones::Perl::reserved->{$name} || join $name, '$s->(\'', '\')' if $name;
 
 	local $_ = $_->{'='}{'expr'}; 
 	my $k = 1;
@@ -102,7 +126,7 @@ sub Perl_include {
 }
 
 sub Perl_var {
-	Perl_4 join Perl_expr(), '$r .= ', ' || \'\';';
+	Perl_4 join Perl_expr(), '$r .= ', ';';
 }
 
 sub Perl_noop {
