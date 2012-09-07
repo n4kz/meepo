@@ -67,7 +67,7 @@ sub JavaScript_loop {
 		join '',
 			JavaScript_4 join(JavaScript_expr(), '(', ' || []).forEach(function (l, i) {'),
 			JavaScript_4 '	var $_ = $s,',
-			JavaScript_4 '		$_s = function ($) { return l[$] || $_($) };',
+			JavaScript_4 '		$_s = function ($) { return l.hasOwnProperty($)? l[$] : $_($) };',
 			JavaScript_4 '	$s = $_s;',
 			build($_->{'+'});
 	}
