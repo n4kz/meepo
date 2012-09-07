@@ -5,7 +5,7 @@ use Meepo::Tags;
 use Meepo::Clones;
 use vars qw{ $context $preview $VERSION };
 
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 $preview = 30;
 $context = {
@@ -17,11 +17,18 @@ sub scream ($;$) {
 	my ($what, $at) = @_;
 
 	if ( $at ) {
+		my $source = $_? \$_ : $context->{'source'};
 		my $start = $at - $preview;
+		my $end = $preview;
+		my $length = length($$source);
+
+		$end = $length - $at if $length < $at + $end;
 		$start = 0 if $start < 0;
-		my $part = substr $_, $start, $preview * 2; 
-		substr $part, $at - $start, 0, '<< HERE >>';
-		$what = join $\ || ' ', $what, $part;
+
+		my $left = substr $$source, $start, $at - $start; 
+		my $right = substr $$source, $at, $end;
+
+		$what = join $\ || ' ', $what, join '<< HERE >>', $left, $right;
 	}
 
 	$@ ||= $what;
@@ -112,8 +119,9 @@ sub prepare ($) {
 
 sub parse ($) {
 	my @queue;
+	local $context->{'source'} = $_[0];
 
-	WORK: foreach (@_) {
+	WORK: foreach (${ $_[0] }) {
 		my $start = pos || 0;
 		if ( m{\G(.*?)<(/)?tmpl_([\w:-]+)(?(2)>)}isgc ) {
 			push @queue, {
@@ -222,10 +230,11 @@ sub parse ($) {
 			'>' => pos() - 1,
 		};
 
-		redo WORK if pos() < length() - 1;
+		redo WORK if not $@ and pos() < length() - 1;
 	} # WORK
 
 	$@ ||= prepare \@queue unless $context->{'raw'};
+
 	return undef if $@;
 	return \@queue;
 } # parse
@@ -250,14 +259,15 @@ sub include () {
 
 	# Inline includes
 	# Run-time includes are handled by clones themselves
-	if ( exists $_->{'='}{'inline'} and $source ) {{
-		my $path = dirname(local $context->{'file'} = load(\$source));
+	if ( $context->{'inline'} || exists $_->{'='}{'inline'} and $source ) {{
+		my $path = dirname(local $context->{'file'} = load \$source);
 		last if $@;
 
 		local $context->{'inc'} = [$path, @{  $context->{'inc'} }]
 			unless grep { $path eq $_ } @{ $context->{'inc'} };
 
-		return @{ parse $source };
+		my $tree = parse \$source;
+		return $tree? @$tree : ();
 	}}
 
 	return $_;
@@ -284,16 +294,16 @@ sub poof ($;$) {
 
 		# Try to load file if $source looks like filepath
 		if ( $source =~ m{(?:\A\.?\.?/|\.tmpl\Z)}i ) {
-			redo unless $context->{'file'} = load(\$source);
+			redo unless $context->{'file'} = load \$source;
 
 			# Prepend template directory to search path
-			my $path = dirname($context->{'file'});
+			my $path = dirname $context->{'file'};
 			local $context->{'inc'} = [$path, @{  $context->{'inc'} }]
 				unless grep { $path eq $_ } @{ $context->{'inc'} };
 		}
 	}
 
-	my $result = parse $source;
+	my $result = parse \$source;
 
 	# TODO: Option to return parsing tree
 	return undef if $@;
