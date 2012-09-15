@@ -1,5 +1,5 @@
 package Meepo::Clones::Perl;
-use vars qw{ %reserved $loop };
+use vars qw{ %reserved $loop %operators };
 
 $loop = 0; # Expand special loop variables or not
 
@@ -11,6 +11,8 @@ $loop = 0; # Expand special loop variables or not
 	__even__    => '!($i % 2)',
 	__counter__ => '$i',
 );
+
+%operators = map { $_ => 1 } qw{ not or and eq ne gt lt ge le cmp };
 
 package Meepo::Clones;
 use strict;
@@ -71,7 +73,7 @@ sub Perl_loop {
 			) : (
 				Perl_4 join(Perl_expr(), 'foreach (@{', '|| []}) {'),
 			),
-			Perl_4 '	my $s = sub { $_->{$_[0]} || &$s };',
+			Perl_4 '	my $s = sub { exists $_->{$_[0]}? $_->{$_[0]} : &$s };',
 			build($_->{'+'});
 	}
 } # Perl_loop
@@ -94,13 +96,12 @@ sub Perl_expr {
 		$name = $_->{'='}{'name'};
 	} else {
 		$name = $_[0] || '';
-		return $name if grep { $name eq $_ } qw{ not or and eq ne gt lt cmp };
+		return $name if $Meepo::Clones::Perl::operators{$name};
 	}
 
 	return $Meepo::Clones::Perl::reserved->{$name} || join $name, '$s->(\'', '\')' if $name;
 
 	local $_ = $_->{'='}{'expr'}; 
-	my $k = 1;
 	my $a = 0;
 
 	{

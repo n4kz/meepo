@@ -103,7 +103,7 @@ sub prepare ($) {
 			return scream "Parent tag not found", $node->{'>'} + 1
 				if $tag->{'in'};
 
-			return scream join($node->{'_'}, 'Open tag not found for ', ''), $node->{'>'} + 1
+			return scream join($node->{'_'}, "Open tag not found for '", "'"), $node->{'>'} + 1
 				if $node->{'x'};
 
 			$node->{'#'} = @scope;
@@ -123,25 +123,18 @@ sub parse ($) {
 
 	WORK: foreach (${ $_[0] }) {
 		my $start = pos || 0;
-		if ( m{\G(.*?)<(/)?tmpl_([\w:-]+)(?(2)>)}isgc ) {
-			push @queue, {
-				'_' => 'noop',
-				'<' => $start,
-				'>' => $start + length $1,
-				'a' => $1,
-				'#' => 0,
-			} if $1;
-		} else {
-			my $chunk = substr $_, $start;
-			push @queue, {
-				'_' => 'noop',
-				'<' => $start,
-				'>' => $start + length $chunk,
-				'a' => $chunk,
-				'#' => 0,
-			};
-			last WORK;
-		}
+		my $trail = substr $_, $start
+			unless m{\G(.*?)<(/)?tmpl_([\w:-]+)(?(2)>)}isgc;
+
+		push @queue, {
+			'_' => 'noop',
+			'<' => $start,
+			'>' => $start + length,
+			'a' => $_,
+			'#' => 0,
+		} foreach grep defined, $1 || $trail;
+
+		last WORK if $trail;
 
 		my ($name, $closed, $attrs) = (lc $3, $2, {});
 		my $tag = $Meepo::Tags::tags{$name};
@@ -249,7 +242,7 @@ sub load ($) {
 		return $_;
 	}
 
-	$@ ||= "File '". ${ $_[0] } ."' was not found";
+	$@ ||= join ${ $_[0] }, "File '", "' was not found";
 	return undef;
 } # load
 

@@ -98,7 +98,6 @@ sub JavaScript_expr {
 	return join $name, '$s(\'', '\')' if $name;
 
 	local $_ = $_->{'='}{'expr'}; 
-	my $k = 1;
 	my $a = 0;
 
 	{
