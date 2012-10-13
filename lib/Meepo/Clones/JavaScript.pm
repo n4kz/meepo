@@ -1,5 +1,17 @@
 package Meepo::Clones::JavaScript;
-use vars qw{ %operators };
+use vars qw{ %reserved $loop %operators };
+
+$loop = 0; # Expand special loop variables or not
+
+%reserved = (
+	__first__   => '!$i',
+	__last__    => '($i === $l)',
+	__inner__   => '($i && $i < $l)',
+	__odd__     => '($i % 2)',
+	__even__    => '!($i % 2)',
+	__counter__ => '$i',
+);
+
 
 %operators = (
 	not   => '!',
@@ -21,7 +33,7 @@ use strict;
 sub JavaScript_0 { <<''
 function ($scope) {
 	var $r = '',
-		$s = (typeof $scope === 'function'? $s = $scope : $s = function ($) { return $scope[$] }),
+		$s = (typeof $scope === 'function'? $scope : function ($) { return $scope[$] }),
 		$w = function ($) {
 			if ($ || $ === 0) {
 				$r += $;
@@ -62,13 +74,13 @@ sub JavaScript_unless {
 
 sub JavaScript_loop {
 	if ( $_->{'x'} ) {
-		JavaScript_4 '});';
+		join '',
+			JavaScript_4 '	}(function ($) { return $e.hasOwnProperty($)? $e[$] : $s($) }));',
+			JavaScript_4 '});';
 	} else {
 		join '',
-			JavaScript_4 join(JavaScript_expr(), '(', ' || []).forEach(function (l, i) {'),
-			JavaScript_4 '	var $_ = $s,',
-			JavaScript_4 '		$_s = function ($) { return l.hasOwnProperty($)? l[$] : $_($) };',
-			JavaScript_4 '	$s = $_s;',
+			JavaScript_4 join(JavaScript_expr(), '(', ' || []).forEach(function ($e, $i) {'),
+			JavaScript_4 '	(function ($s) {',
 			build($_->{'+'});
 	}
 } # JavaScript_loop
@@ -87,17 +99,18 @@ sub JavaScript_elsif {
 
 sub JavaScript_expr {
 	my $name;
-		unless ( $_[0] ) {
-			$name = $_->{'='}{'name'};
-		} else {
-			$name = $_[0] || '';
-			return $Meepo::Clones::JavaScript::operators{$name}
-				if exists $Meepo::Clones::JavaScript::operators{$name}; 
-		}
 
-	return join $name, '$s(\'', '\')' if $name;
+	unless ( $_[0] ) {
+		$name = $_->{'='}{'name'};
+	} else {
+		$name = $_[0] || '';
+		return $Meepo::Clones::JavaScript::operators{$name}
+			if exists $Meepo::Clones::JavaScript::operators{$name};
+	}
 
-	local $_ = $_->{'='}{'expr'}; 
+	return $Meepo::Clones::JavaScript::reserved->{$name} || join $name, '$s(\'', '\')' if $name;
+
+	local $_ = $_->{'='}{'expr'};
 	my $a = 0;
 
 	{

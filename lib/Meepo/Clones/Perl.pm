@@ -92,6 +92,7 @@ sub Perl_elsif {
 
 sub Perl_expr {
 	my $name;
+
 	unless ( $_[0] ) {
 		$name = $_->{'='}{'name'};
 	} else {
@@ -101,7 +102,7 @@ sub Perl_expr {
 
 	return $Meepo::Clones::Perl::reserved->{$name} || join $name, '$s->(\'', '\')' if $name;
 
-	local $_ = $_->{'='}{'expr'}; 
+	local $_ = $_->{'='}{'expr'};
 	my $a = 0;
 
 	{
