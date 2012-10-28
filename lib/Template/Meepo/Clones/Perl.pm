@@ -100,6 +100,10 @@ sub Perl_expr {
 		return $name if $Template::Meepo::Clones::Perl::operators{$name};
 	}
 
+	# Special case <TMPL_IF 0>
+	return $name if $name and $name =~ m{^[01]$};
+
+	# Reserved name
 	return $Template::Meepo::Clones::Perl::reserved->{$name} || join $name, '$s->(\'', '\')' if $name;
 
 	local $_ = $_->{'='}{'expr'};

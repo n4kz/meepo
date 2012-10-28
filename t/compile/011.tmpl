@@ -1,0 +1,15 @@
+<!-- TMPL_ELSE now -->
+<TMPL_IF Name>
+	<TMPL_UNLESS Expr><!--
+		<TMPL_VAR Name>
+	--><TMPL_ELSE><!--
+		<tmpl_unless bar>
+			<TMPL_VAR baz>
+		<tmpl_else>
+			<TMPL_VAR bar>
+		</tmpl_unless>
+	--></TMPL_UNLESS>
+	<TMPL_IF foo>
+		<TMPL_VAR baz>
+	</TMPL_IF>
+</TMPL_IF>
