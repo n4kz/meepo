@@ -3,8 +3,8 @@ use strict;
 use Cwd;
 use File::Basename;
 use lib join('/../', dirname($0), 'lib');
-use Meepo;
-use Meepo::Clones::Perl;
+use Template::Meepo;
+use Template::Meepo::Clones 'Perl';
 use HTML::Template::Pro;
 use Benchmark;
 use JSON;
@@ -38,7 +38,7 @@ my $pro = HTML::Template::Pro->new(
 	}
 );
 
-my $f = Meepo::poof($template) or die $@;
+my $f = Template::Meepo::poof($template) or die $@;
 $f = eval $$f or die $@;
 
 my $params = {

@@ -1,4 +1,4 @@
-package Meepo::Clones::JavaScript;
+package Template::Meepo::Clones::JavaScript;
 use vars qw{ %reserved $loop %operators };
 
 $loop = 0; # Expand special loop variables or not
@@ -27,7 +27,7 @@ $loop = 0; # Expand special loop variables or not
 	'<=>' => '!=',
 );
 
-package Meepo::Clones;
+package Template::Meepo::Clones;
 use strict;
 
 sub JavaScript_0 { <<''
@@ -104,11 +104,11 @@ sub JavaScript_expr {
 		$name = $_->{'='}{'name'};
 	} else {
 		$name = $_[0] || '';
-		return $Meepo::Clones::JavaScript::operators{$name}
-			if exists $Meepo::Clones::JavaScript::operators{$name};
+		return $Template::Meepo::Clones::JavaScript::operators{$name}
+			if exists $Template::Meepo::Clones::JavaScript::operators{$name};
 	}
 
-	return $Meepo::Clones::JavaScript::reserved->{$name} || join $name, '$s(\'', '\')' if $name;
+	return $Template::Meepo::Clones::JavaScript::reserved->{$name} || join $name, '$s(\'', '\')' if $name;
 
 	local $_ = $_->{'='}{'expr'};
 	my $a = 0;

@@ -1,4 +1,4 @@
-package Meepo::Clones::Perl;
+package Template::Meepo::Clones::Perl;
 use vars qw{ %reserved $loop %operators };
 
 $loop = 0; # Expand special loop variables or not
@@ -14,7 +14,7 @@ $loop = 0; # Expand special loop variables or not
 
 %operators = map { $_ => 1 } qw{ not or and eq ne gt lt ge le cmp };
 
-package Meepo::Clones;
+package Template::Meepo::Clones;
 use strict;
 
 sub Perl_0 { <<''
@@ -59,14 +59,14 @@ sub Perl_unless {
 sub Perl_loop {
 	if ( $_->{'x'} ) {
 		(
-			$Meepo::Clones::Perl::loop? (
+			$Template::Meepo::Clones::Perl::loop? (
 				Perl_4 '	$i++;'
 			) : (),
 			Perl_4 '}'
 		);
 	} else {
 		join '',
-			$Meepo::Clones::Perl::loop? (
+			$Template::Meepo::Clones::Perl::loop? (
 				Perl_4 join(Perl_expr(), 'my $a = ', ' || [];'),
 				Perl_4 'my ($l, $i) = ($#$a, 0);',
 				Perl_4 'foreach (@$a) {',
@@ -97,10 +97,10 @@ sub Perl_expr {
 		$name = $_->{'='}{'name'};
 	} else {
 		$name = $_[0] || '';
-		return $name if $Meepo::Clones::Perl::operators{$name};
+		return $name if $Template::Meepo::Clones::Perl::operators{$name};
 	}
 
-	return $Meepo::Clones::Perl::reserved->{$name} || join $name, '$s->(\'', '\')' if $name;
+	return $Template::Meepo::Clones::Perl::reserved->{$name} || join $name, '$s->(\'', '\')' if $name;
 
 	local $_ = $_->{'='}{'expr'};
 	my $a = 0;

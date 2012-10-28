@@ -1,11 +1,7 @@
-#!/usr/bin/perl -w 
+#!/usr/bin/perl -w
 use strict;
 use Cwd;
-use File::Basename;
-use lib join('/../', dirname($0), 'lib');
-use Meepo;
-use Meepo::Clones::Perl;
-use Meepo::Clones::JavaScript;
+use Template::Meepo;
 
 my $usage = <<"";
 Usage: $0 <builder> <template>
@@ -14,10 +10,10 @@ Usage: $0 <builder> <template>
 
 my $builder = $ARGV[0];
 
-my $f = Meepo::poof(
+my $f = Template::Meepo::poof(
 	$ARGV[1] => {
 		builder => $builder,
-		inc => [cwd()],
+		inc => [cwd(), ''],
 	}
 );
 
@@ -25,3 +21,5 @@ die $@ if $@;
 
 local $\ = "\n";
 $f and print $$f;
+
+# vim: set filetype=perl :

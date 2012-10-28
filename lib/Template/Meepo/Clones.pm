@@ -1,4 +1,6 @@
-package Meepo::Clones;
+package Template::Meepo::Clones;
+use Template::Meepo::Clones::Perl;
+use Template::Meepo::Clones::JavaScript;
 use strict 'vars', 'subs';
 use vars '$clone', '%cbs';
 
@@ -13,10 +15,7 @@ sub spawn ($$) {
 	local $clone = $_[1];
 	local %cbs;
 
-	# Lazy load 
-	eval "require Meepo::Clones::$clone" or return undef;
-
-	while (my ($k, $v) = each %Meepo::Clones::) {
+	while (my ($k, $v) = each %Template::Meepo::Clones::) {
 		next if index $k, $clone;
 		next if $v eq '::';
 		$cbs{substr $k, $prefix} = $v;

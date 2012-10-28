@@ -1,16 +1,15 @@
-package Meepo;
+package Template::Meepo 3;
 use strict;
 use File::Basename;
-use Meepo::Tags;
-use Meepo::Clones;
-use vars qw{ $context $preview $VERSION };
-
-$VERSION = '0.02';
+use Template::Meepo::Tags;
+use Template::Meepo::Clones;
+use vars qw{ $context $preview };
 
 $preview = 30;
 $context = {
 	inc => [],
-	builder => 'Perl'
+	builder => 'Perl',
+	chomp => 1,
 };
 
 sub scream ($;$) {
@@ -55,7 +54,7 @@ sub prepare ($) {
 
 			next;
 		}
-	   
+  
 		$tag = $node->{'%'};
 
 		# Check scope
@@ -137,7 +136,7 @@ sub parse ($) {
 		last WORK if $trail;
 
 		my ($name, $closed, $attrs) = (lc $3, $2, {});
-		my $tag = $Meepo::Tags::tags{$name};
+		my $tag = $Template::Meepo::Tags::tags{$name};
 
 		return scream "Unknown tag '$name'", pos
 			unless $tag;
@@ -235,10 +234,15 @@ sub parse ($) {
 sub load ($) {
 	foreach (map { join '/', $_, ${ $_[0] } } reverse @{ $context->{'inc'} }) {
 		-f $_ or next;
-		local $/;
-		open my $fh, '<', $_;
-		${ $_[0] } = <$fh>;
-		close $fh;
+
+		{
+			local $/;
+			open my $fh, '<', $_;
+			${ $_[0] } = readline $fh;
+			close $fh;
+		}
+
+		chomp ${ $_[0] } if $context->{'chomp'};
 		return $_;
 	}
 
@@ -281,7 +285,7 @@ sub poof ($;$) {
 
 		# Try to get $source from context if source looks like package
 		if ( $source eq __PACKAGE__ ) {
-			$source = delete $Meepo::context->{'source'};
+			$source = delete $Template::Meepo::context->{'source'};
 			redo;
 		}
 
@@ -300,7 +304,7 @@ sub poof ($;$) {
 
 	# TODO: Option to return parsing tree
 	return undef if $@;
-	return Meepo::Clones::spawn $result, $Meepo::context->{'builder'};
+	return Template::Meepo::Clones::spawn $result, $Template::Meepo::context->{'builder'};
 } # poof
 
 1;
