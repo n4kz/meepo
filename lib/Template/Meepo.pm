@@ -147,6 +147,9 @@ sub parse ($) {
 		if ( not $closed and $tag->{'name'} || $tag->{'attrs'} ) {
 			my ($parsed, @list) = {};
 
+			# TODO: Allow case sensitive attrs
+			# like <TMPL_VAR MyVariable>
+			# case <TMPL_VAR EXPR="MyVariable"> seems to be ok
 			$parsed->{lc $1} = $3 while m{\G[\s\t\n\r]*([\w:_-]+)(?:=(['"])(.*?)(?<!\\)\2)?}sgc;
 
 			# Name 
