@@ -1,0 +1,42 @@
+{
+	"inner": 9,
+	"outer": [
+		{
+			"outer": "A",
+			"inner": [
+				{
+					"inner": 1
+				}, {
+					"inner": 2
+				}, {
+				}, {
+					"inner": 4
+				}
+			]
+		}, {
+			"outer": "B",
+			"inner": [
+				{
+					"inner": 5
+				}, {
+				}, {
+					"inner": 7
+				}, {
+					"inner": 8
+				}
+			]
+		}, {
+			"outer": "C",
+			"inner": [
+				{
+					"inner": 1
+				}, {
+					"inner": 2
+				}, {
+					"inner": 3
+				}, {
+				}
+			]
+		}
+	]
+}

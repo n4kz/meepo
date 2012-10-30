@@ -22,7 +22,7 @@ sub {
 	no warnings;
 	my $scope = $_[0];
 	my $s = sub { $scope->{$_[0]} };
-	my $r;
+	my $r = '';
 
 }
 
