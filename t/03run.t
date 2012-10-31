@@ -36,6 +36,9 @@ foreach my $output (@tests) {
 	$template =~ s{^} {../compile/};
 	$data =~ s{html$} {json};
 
+	$Template::Meepo::Clones::Perl::loop = 1
+		if $template =~ m{020};
+
 	if (-f $data) {
 		$data = from_json slurp $data;
 	} else {
@@ -55,4 +58,7 @@ foreach my $output (@tests) {
 
 	is ref $result, 'SCALAR', "Got output as expected for $template";
 	is $$result, slurp $output, "Output matches expected for $template";
+
+	$Template::Meepo::Clones::Perl::loop = 0
+		if $Template::Meepo::Clones::Perl::loop;
 }

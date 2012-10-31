@@ -48,6 +48,9 @@ foreach my $output (@tests) {
 		$data = {};
 	}
 
+	$Template::Meepo::Clones::JavaScript::loop = 1
+		if $template =~ m{020};
+
 	$code = Template::Meepo::poof $template, { builder => 'JavaScript', inc => ['.'] };
 	is $@, undef, "Template $template compiled";
 	is ref $code, 'SCALAR';
@@ -68,6 +71,9 @@ foreach my $output (@tests) {
 
 	ok !$?, 'No error set';
 	is $result, slurp $output, "Output matches expected for $template";
+
+	$Template::Meepo::Clones::JavaScript::loop = 0
+		if $Template::Meepo::Clones::JavaScript::loop;
 }
 
 __DATA__

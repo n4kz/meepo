@@ -12,7 +12,6 @@ $loop = 0; # Expand special loop variables or not
 	__counter__ => '$i',
 );
 
-
 %operators = (
 	not   => '!',
 	or    => '||',
@@ -32,7 +31,7 @@ use strict;
 
 sub JavaScript_0 { <<''
 function ($scope) {
-	var $r = '', $b,
+	var $r = '', $b, $l, $loop,
 		$s = (typeof $scope === 'function'? $scope : function ($) { return $scope[$] }),
 		$w = function ($) {
 			if ($ || $ === 0) {
@@ -79,7 +78,13 @@ sub JavaScript_loop {
 			JavaScript_4 '});';
 	} else {
 		join '',
-			JavaScript_4 join(JavaScript_expr(), '(', ' || []).forEach(function ($e, $i) {'),
+			$Template::Meepo::Clones::JavaScript::loop? (
+				JavaScript_4 join(JavaScript_expr(), '$loop = ', ' || [];'),
+				JavaScript_4 '$l = $loop.length - 1;',
+				JavaScript_4 '$loop.forEach(function ($e, $i) {',
+			) : (
+				JavaScript_4 join(JavaScript_expr(), '(', ' || []).forEach(function ($e, $i) {'),
+			),
 			JavaScript_4 '(function ($s) {',
 			build($_->{'+'});
 	}
@@ -112,7 +117,7 @@ sub JavaScript_expr {
 	return $name if $name and $name =~ m{^[01]$};
 
 	# Reserved name
-	return $Template::Meepo::Clones::JavaScript::reserved->{$name} || join $name, '$s(\'', '\')' if $name;
+	return $Template::Meepo::Clones::JavaScript::reserved{$name} || join $name, '$s(\'', '\')' if $name;
 
 	local $_ = $_->{'='}{'expr'};
 	my $a = 0;

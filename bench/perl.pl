@@ -2,9 +2,7 @@
 use strict;
 use Cwd;
 use File::Basename;
-use lib join('/../', dirname($0), 'lib');
 use Template::Meepo;
-use Template::Meepo::Clones 'Perl';
 use HTML::Template::Pro;
 use Benchmark;
 use JSON;
@@ -32,9 +30,10 @@ $data = from_json($data);
 my $pro = HTML::Template::Pro->new(
 	case_sensitive => 1,
 	loop_context_vars => 1,
+	global_vars => 1,
 	scalarref => $template,
 	functions => {
-		ml => sub {''},
+		ml => \&ml,
 	}
 );
 
@@ -48,7 +47,7 @@ my $params = {
 	tree => $data,
 };
 
-timethese($ARGV[2] || 10, {
+timethese($ARGV[2] || 50, {
 	Meepo => sub {
 		$f->($params);
 	},
