@@ -75,12 +75,12 @@ sub JavaScript_unless {
 sub JavaScript_loop {
 	if ( $_->{'x'} ) {
 		join '',
-			JavaScript_4 '	}(function ($) { return $e.hasOwnProperty($)? $e[$] : $s($) }));',
+			JavaScript_4 '}(function ($) { return $e.hasOwnProperty($)? $e[$] : $s($) }));',
 			JavaScript_4 '});';
 	} else {
 		join '',
 			JavaScript_4 join(JavaScript_expr(), '(', ' || []).forEach(function ($e, $i) {'),
-			JavaScript_4 '	(function ($s) {',
+			JavaScript_4 '(function ($s) {',
 			build($_->{'+'});
 	}
 } # JavaScript_loop

@@ -9,7 +9,7 @@ sub slurp ($) {
 
 	{
 		local $/;
-		open my $file, '<', $_[0] or die $@;
+		open my $file, '<', $_[0] or die $!;
 		$data = readline $file;
 		close $file;
 	}

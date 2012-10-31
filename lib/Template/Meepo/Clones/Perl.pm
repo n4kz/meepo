@@ -67,13 +67,13 @@ sub Perl_loop {
 	} else {
 		join '',
 			$Template::Meepo::Clones::Perl::loop? (
-				Perl_4 join(Perl_expr(), 'my $a = ', ' || [];'),
-				Perl_4 'my ($l, $i) = ($#$a, 0);',
-				Perl_4 'foreach (@$a) {',
+				Perl_4 join(Perl_expr(), 'my $loop = ', ' || [];'),
+				Perl_4 'my ($l, $i) = ($#$loop, 0);',
+				Perl_4 'foreach my $e (@$loop) {',
 			) : (
-				Perl_4 join(Perl_expr(), 'foreach (@{', '|| []}) {'),
+				Perl_4 join(Perl_expr(), 'foreach my $e (@{', '|| []}) {'),
 			),
-			Perl_4 '	my $s = sub { exists $_->{$_[0]}? $_->{$_[0]} : &$s };',
+			Perl_4 '	my $s = sub { exists $e->{$_[0]}? $e->{$_[0]} : &$s };',
 			build($_->{'+'});
 	}
 } # Perl_loop
