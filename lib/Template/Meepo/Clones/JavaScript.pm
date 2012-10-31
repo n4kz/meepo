@@ -32,7 +32,7 @@ use strict;
 
 sub JavaScript_0 { <<''
 function ($scope) {
-	var $r = '',
+	var $r = '', $b,
 		$s = (typeof $scope === 'function'? $scope : function ($) { return $scope[$] }),
 		$w = function ($) {
 			if ($ || $ === 0) {
@@ -141,7 +141,16 @@ sub JavaScript_include {
 }
 
 sub JavaScript_var {
-	JavaScript_4 join JavaScript_expr(), '$w(', ');';
+	my $default = $_->{'='}{'default'};
+
+	if ($default) {
+		# Default value for tmpl_var
+		# TODO: Escape quotes wisely
+		$default =~ s{'} {\\'}g;
+		JavaScript_4 join JavaScript_expr(), '$w(typeof($b = (', ")) !== 'undefined'? \$b : '$default');";
+	} else {
+		JavaScript_4 join JavaScript_expr(), '$w(', ');';
+	}
 }
 
 sub JavaScript_noop {

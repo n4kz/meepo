@@ -23,6 +23,7 @@ sub {
 	my $scope = $_[0];
 	my $s = sub { $scope->{$_[0]} };
 	my $r = '';
+	my $b;
 
 }
 
@@ -132,7 +133,16 @@ sub Perl_include {
 }
 
 sub Perl_var {
-	Perl_4 join Perl_expr(), '$r .= ', ';';
+	my $default = $_->{'='}{'default'};
+
+	if ( $default ) {
+		# Default value for tmpl_var
+		# TODO: Escape quotes wisely
+		$default =~ s{'} {\\'}g;
+		Perl_4 join Perl_expr(), '$r .= defined($b = (', "))? \$b : '$default';";
+	} else {
+		Perl_4 join Perl_expr(), '$r .= ', ';';
+	}
 }
 
 sub Perl_noop {

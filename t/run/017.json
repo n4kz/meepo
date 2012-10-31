@@ -1,0 +1,6 @@
+{
+	"Test": "Big test string",
+	"Name": "Short string",
+	"name": [{}],
+	"TMPL_VAR": "Var test"
+}

@@ -6,6 +6,12 @@ use vars '%tags';
 	var => {
 		expr => 1,
 		name => 1,
+		attrs => {
+			default => {
+				optional => 1,
+				boolean => 0,
+			},
+		},
 	},
 
 	include => {
