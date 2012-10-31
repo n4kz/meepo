@@ -22,8 +22,8 @@ sub {
 	no warnings;
 	my $scope = $_[0];
 	my $s = sub { $scope->{$_[0]} };
+	my ($b, $i, $l);
 	my $r = '';
-	my $b;
 
 }
 

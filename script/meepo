@@ -19,7 +19,6 @@ my $f = Template::Meepo::poof(
 
 die $@ if $@; 
 
-local $\ = "\n";
-$f and print $$f;
+$f and print $$f, "\n";
 
 # vim: set filetype=perl :

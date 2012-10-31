@@ -1,9 +1,11 @@
-package Template::Meepo 3;
+package Template::Meepo;
 use strict;
 use File::Basename;
 use Template::Meepo::Tags;
 use Template::Meepo::Clones;
-use vars qw{ $context $preview };
+use vars qw{ $context $preview $VERSION };
+
+$VERSION = 4;
 
 $preview = 30;
 $context = {
